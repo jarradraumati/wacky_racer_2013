@@ -1,0 +1,8 @@
+KERNEL_DIR = $(WRLIB_DIR)/kernel
+
+VPATH += $(KERNEL_DIR)
+INCLUDES += -I$(KERNEL_DIR)
+
+PERIPHERALS += pit
+
+SRC += kernel.c
