@@ -43,7 +43,7 @@ Commiting everything
 $ git commit -m "Message"
 
 Committing file(s)
-$ git commit file1 file2 "message"
+$ git commit file1 file2 -m "message"
 
 Checking status of local changes
 $ git status
