@@ -28,6 +28,7 @@
 //#include "usb_logging.h"
 #include "kernel.h"
 
+#define ALL_LEDS LED_GREEN_PIO|LED_RED_PIO|LED0_PIO|LED1_PIO|LED2_PIO|LED3_PIO
 
 
 #define BUTTON_POLL_RATE     100
@@ -39,23 +40,25 @@
 #define PWM_FREQ_MIN 0
 #define PWM_FREQ_MAX 100e3
 
-/* DUTY in percent * 10 e.g. 50 = 5% */
-#define PWM_MOTOR_DUTY_MIN         0
-#define PWM_MOTOR_DUTY_DEFAULT     70
-#define PWM_MOTOR_DUTY_MAX         115
-#define PWM_MOTOR_DIVISOR         10.0
+/* PWM DUTY in percent */
+#define PWM_MOTOR_DUTY_MIN         0.0
+#define PWM_MOTOR_DUTY_DEFAULT     7.0
+#define PWM_MOTOR_DUTY_MAX         11.5
+//#define PWM_MOTOR_DIVISOR         10.0
 
-#define PWM_STEERING_DUTY_MIN         68
-#define PWM_STEERING_DUTY_DEFAULT     85
-#define PWM_STEERING_DUTY_MAX         100
-#define PWM_STEERING_DIVISOR         10.0
+#define PWM_STEERING_DUTY_MIN         6.8
+#define PWM_STEERING_DUTY_DEFAULT     8.5
+#define PWM_STEERING_DUTY_MAX         10.0
+//#define PWM_STEERING_DIVISOR         10.0
 
+#define PWM1_PIO PIO_DEFINE(PORT_A, 24)
+#define PWM2_PIO PIO_DEFINE(PORT_A, 25)
 
 static const pwm_cfg_t pwm_motor_cfg =
 {
     .pio = PWM1_PIO,
     .period = PWM_PERIOD_DIVISOR (PWM_MOTOR_FREQ_HZ),
-    .duty = PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, PWM_MOTOR_DUTY_DEFAULT/PWM_MOTOR_DIVISOR),
+    .duty = PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, PWM_MOTOR_DUTY_DEFAULT),
     .align = PWM_ALIGN_LEFT,
     .polarity = PWM_POLARITY_HIGH
 };
@@ -64,7 +67,7 @@ static const pwm_cfg_t pwm_steering_cfg =
 {
     .pio = PWM2_PIO,
     .period = PWM_PERIOD_DIVISOR (PWM_STEERING_FREQ_HZ),
-    .duty = PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, PWM_STEERING_DUTY_DEFAULT/PWM_STEERING_DIVISOR),
+    .duty = PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, PWM_STEERING_DUTY_DEFAULT),
     .align = PWM_ALIGN_LEFT,
     .polarity = PWM_POLARITY_HIGH
 };
@@ -83,8 +86,8 @@ typedef struct button_task_struct
 
 typedef struct motor_task_struct
 {
-    int32_t motor_pwm_duty;
-    int32_t steering_pwm_duty;
+    double motor_pwm_duty;
+    double steering_pwm_duty;
 } motor_task_t;
 
 
@@ -177,18 +180,19 @@ void button_task (void *data)
             return;
         }
 
-//        motor_data.motor_pwm_duty++;
-//        if(motor_data.motor_pwm_duty >= PWM_MOTOR_DUTY_MAX)
-//            motor_data.motor_pwm_duty = PWM_MOTOR_DUTY_MAX;
-//        pwm_duty_set(pwm_motor,
-//             PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, motor_data.motor_pwm_duty/PWM_MOTOR_DIVISOR));
+        motor_data.motor_pwm_duty+=0.1;
+        if(motor_data.motor_pwm_duty >= PWM_MOTOR_DUTY_MAX)
+            motor_data.motor_pwm_duty = PWM_MOTOR_DUTY_MAX;
+        pwm_duty_set(pwm_motor,
+             PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, motor_data.motor_pwm_duty));
 
-        motor_data.steering_pwm_duty++;
-        if(motor_data.steering_pwm_duty >= PWM_STEERING_DUTY_MAX)
-            motor_data.steering_pwm_duty = PWM_STEERING_DUTY_MAX;
-        pwm_duty_set(pwm_steering,
-               PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, motor_data.steering_pwm_duty/PWM_STEERING_DIVISOR));
-
+  //      motor_data.steering_pwm_duty+=0.1;
+  //      if(motor_data.steering_pwm_duty >= PWM_STEERING_DUTY_MAX)
+  //          motor_data.steering_pwm_duty = PWM_STEERING_DUTY_MAX;
+  //      pwm_duty_set(pwm_steering,
+  //             PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, motor_data.steering_pwm_duty));
+		
+		pio_output_toggle (LED3_PIO);
     }
 
     if (button_pushed_p (button2))
@@ -204,18 +208,19 @@ void button_task (void *data)
             sleep_setup ();
          */
 
-//        motor_data.motor_pwm_duty--;
-//        if(motor_data.motor_pwm_duty <= PWM_MOTOR_DUTY_MIN)
-//            motor_data.motor_pwm_duty = PWM_MOTOR_DUTY_MIN;
-//        pwm_duty_set(pwm_motor,
-//            PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, motor_data.motor_pwm_duty/PWM_MOTOR_DIVISOR));
+        motor_data.motor_pwm_duty-=0.1;
+        if(motor_data.motor_pwm_duty <= PWM_MOTOR_DUTY_MIN)
+            motor_data.motor_pwm_duty = PWM_MOTOR_DUTY_MIN;
+        pwm_duty_set(pwm_motor,
+            PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, motor_data.motor_pwm_duty));
 
-        motor_data.steering_pwm_duty--;
-        if(motor_data.steering_pwm_duty <= PWM_STEERING_DUTY_MIN)
-            motor_data.steering_pwm_duty = PWM_STEERING_DUTY_MIN;
-        pwm_duty_set(pwm_steering,
-            PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, motor_data.steering_pwm_duty/PWM_STEERING_DIVISOR));
-
+  //      motor_data.steering_pwm_duty-=0.1;
+  //      if(motor_data.steering_pwm_duty <= PWM_STEERING_DUTY_MIN)
+  //          motor_data.steering_pwm_duty = PWM_STEERING_DUTY_MIN;
+  //      pwm_duty_set(pwm_steering,
+  //          PWM_DUTY_DIVISOR (PWM_STEERING_FREQ_HZ, motor_data.steering_pwm_duty));
+		
+		pio_output_toggle (LED3_PIO);
     }
 
     if (button_pushed_p (button3)) // this "button" also wakes up micro
@@ -232,7 +237,6 @@ void motor_task (void *data)
 
 }
 
-#define ALL_LEDS LED_GREEN_PIO|LED_RED_PIO|LED0_PIO|LED1_PIO|LED2_PIO|LED3_PIO
 
 int
 main ()
@@ -264,11 +268,9 @@ main ()
     kernel_init ();
 
 
-    //kernel_taskRegister (led_flash, LED1_FLASH, &led1_data, 1000); /* period is in ms */
     kernel_taskRegister (button_task, BUTTON_TASK, &button_data, BUTTON_POLL_PERIOD); /* period is in ms */
     kernel_taskRegister (led_flash, LED0_FLASH, &led0_data, 500); /* period is in ms */
-    //kernel_taskRegister (led_flash, LED1_FLASH, &led1_data, 100); /* period is in ms */
-    kernel_taskRegister (motor_task, MOTOR_TASK, &motor_data, 100); /* period is in ms */
+    //kernel_taskRegister (motor_task, MOTOR_TASK, &motor_data, 100); /* period is in ms */
 
 
 
