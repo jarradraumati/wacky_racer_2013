@@ -6,15 +6,17 @@ MMCULIB_DIR = ../../mmculib
 
 WRLIB_DIR = ../../wrlib
 
-DRIVERS = 
+PERIPHERALS = pit extint pwm
 
-WR_DRIVERS = kernel
+DRIVERS = button pacer usb_cdc
+
+WR_DRIVERS = kernel motor steering
 
 TARGET = motor.bin
 
-SRC = motor.c
+SRC = motor_board.c
 
-include ../../boards/camera/board.mk
+include ../../boards/motor/board.mk
 include $(WRLIB_DIR)/wrlib.mk
 include $(MMCULIB_DIR)/mmculib.mk
 

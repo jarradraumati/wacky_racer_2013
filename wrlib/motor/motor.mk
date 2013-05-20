@@ -1,0 +1,8 @@
+MOTOR_DIR = $(WRLIB_DIR)/motor
+
+VPATH += $(MOTOR_DIR)
+INCLUDES += -I$(MOTOR_DIR)
+
+PERIPHERALS += pwm
+
+SRC += motor.c
