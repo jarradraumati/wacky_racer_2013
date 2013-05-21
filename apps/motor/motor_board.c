@@ -19,6 +19,7 @@
 #include "button.h"
 #include "pacer.h"
 #include "usb_cdc.h"
+#include "ir_rc5_rx.h"
 
 /* mat91libs */
 #include "pit.h"
@@ -30,6 +31,7 @@
 #include "kernel.h"
 #include "motor.h"
 #include "steering.h"
+
 
 
 #define BUTTON_POLL_RATE     10
@@ -90,13 +92,73 @@ button_task_t button_data = {0};
  *
  * Add a new value whenever you register a new task
  */
-enum {LED0_FLASH, BUTTON_TASK, MOTOR_TASK, STEERING_TASK, TEST_TASK, SERVO_TASK};
+enum {LED0_FLASH, BUTTON_TASK, MOTOR_TASK, STEERING_TASK, TEST_TASK, IR_TASK};
 
 
 void led_flash (void *data)
 {
     state_t *state = data;
     pio_output_toggle (state->led);
+}
+
+#define IR_POLL_ATTEMPTS 1000
+void ir_task (void *data)
+{
+	int16_t bits;
+	int16_t addr;
+	int16_t cmd;
+	uint16_t i;
+	
+	/* Poll the IR driver.  */
+
+	for(i=0; i< IR_POLL_ATTEMPTS; i++)
+	{
+		pio_output_high (LED3_PIO);
+
+		bits = ir_rc5_rx_read ();
+	
+		if (bits > 0)
+		{
+			addr = (bits & 0x7C0) >>6;
+			cmd = bits & 0x3F;
+
+	//		led_flash (&led0_data);
+
+
+#define BTN_2 0x15
+#define BTN_4 0x18
+#define BTN_6 0x1E
+#define BTN_8 0x21
+
+			if (addr == 7)	// the pinnacle remote
+			{
+				led_flash (&led1_data);
+			}
+			
+			switch(cmd)
+			{
+				case BTN_2:
+					motor_increase_speed();				
+					break;
+
+				case BTN_4:
+					steering_turn_right();				
+					break;
+
+				case BTN_6:
+					steering_turn_left();				
+					break;
+
+				case BTN_8:
+					motor_decrease_speed();				
+					break;
+			
+			}
+			return;
+		}
+		pio_output_low (LED3_PIO);
+
+	}
 }
 
 void button_task (void *data)
@@ -203,11 +265,15 @@ main (void)
 	motor_init();
 	steering_init();
 	
+    /* Initialise IR driver.  */
+    ir_rc5_rx_init ();
+	
 	/* task period is in ms */
     kernel_taskRegister (button_task, BUTTON_TASK, &button_data, BUTTON_POLL_PERIOD); 
     kernel_taskRegister (led_flash, LED0_FLASH, &led0_data, 500); 
-	kernel_taskRegister (test_task, TEST_TASK, 0, 500); 
-	kernel_taskRegister (motor_task, MOTOR_TASK, 0, 100); 
+	//kernel_taskRegister (test_task, TEST_TASK, 0, 500); 
+	kernel_taskRegister (motor_task, MOTOR_TASK, 0, 100);  
+	kernel_taskRegister (ir_task, IR_TASK, 0, 1);  	
     
     kernel_start ();
     

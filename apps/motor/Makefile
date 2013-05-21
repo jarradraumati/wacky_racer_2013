@@ -8,7 +8,7 @@ WRLIB_DIR = ../../wrlib
 
 PERIPHERALS = pit extint pwm
 
-DRIVERS = button pacer usb_cdc
+DRIVERS = button pacer usb_cdc ir_rc5
 
 WR_DRIVERS = kernel motor steering
 
