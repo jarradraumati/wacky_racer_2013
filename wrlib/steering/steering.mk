@@ -1,0 +1,8 @@
+STEERING_DIR = $(WRLIB_DIR)/steering
+
+VPATH += $(STEERING_DIR)
+INCLUDES += -I$(STEERING_DIR)
+
+PERIPHERALS += pwm
+
+SRC += steering.c
