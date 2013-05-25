@@ -6,7 +6,7 @@ MMCULIB_DIR = ../../mmculib
 
 WRLIB_DIR = ../../wrlib
 
-DRIVERS = 
+DRIVERS = bbi2c tcm8230
 
 WR_DRIVERS = kernel
 

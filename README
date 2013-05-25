@@ -36,6 +36,9 @@ $ make debug
 Updating. Change to root dir
 $ git pull
 
+Updating submodules. Change to root
+$ git submodule foreach git pull origin master
+
 Adding new files (please don't add files that make creates)
 $ git add files
 
