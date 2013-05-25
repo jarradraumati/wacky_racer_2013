@@ -136,7 +136,7 @@ kernel_start (void)
 				if (tasks[i].state == TASK_READY)
 				{
 					/* If the tasked is blocked for 0 time then it can be run */
-					if (tasks[i].blocked_for == 0)
+					if (tasks[i].blocked_for <= 0)
 					{
 
 						/* Run the task */

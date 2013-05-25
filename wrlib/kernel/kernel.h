@@ -54,7 +54,7 @@ typedef struct _task_struct
     task_func_t func; ///< Function to call.
     void *data; ///< Generic pointer for passing data
     uint32_t period; ///< Task period.
-    uint32_t blocked_for; ///< For periodic blocking
+    int blocked_for; ///< For periodic blocking
     taskState_t state; ///< State of the tasks
 
 } task_t;
