@@ -30,7 +30,8 @@ typedef enum motor_state
     MOTOR_STATE_NORMAL = 0,
 	MOTOR_STATE_REVERSE_PENDING,
 	MOTOR_STATE_REVERSE_SET,
-	MOTOR_STATE_NEUTRAL_SET
+	MOTOR_STATE_NEUTRAL_SET,
+	MOTOR_STATE_FINISHED_BRAKING	
 } motor_state_t;
 
 
@@ -41,6 +42,7 @@ typedef struct motor_struct
 {
     pwm_t pwm;
 	motor_speed_t speed;
+	uint8_t braking;	
 	motor_state_t state;
 	motor_timeout_t timeout;
 } motor_t;
@@ -50,7 +52,7 @@ void motor_init (void);
 void motor_increase_speed(void);
 void motor_decrease_speed(void);
 void motor_update(void); 			/*  call motor update about every 100ms */
-void motor_stop (void);
+void motor_brake (void);
 void motor_keepalive(void);
 
 #endif /*MOTOR_H_*/

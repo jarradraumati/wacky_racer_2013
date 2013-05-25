@@ -88,7 +88,7 @@ button_task_t button_data = {0};
  *
  * Add a new value whenever you register a new task
  */
-enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK};
+enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK, USB_TASK};
 
 
 void led_flash (void *data)
@@ -112,24 +112,30 @@ void ir_task (void *data)
 		{
 			case IR_REMOTE_BTN_2:
 				motor_increase_speed();				
+				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "faster!"); 	
+
 				break;
 
 			case IR_REMOTE_BTN_4:
 				steering_turn_left ();				
+				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "turn left"); 					
 				motor_keepalive ();
 				break;
 
 			case IR_REMOTE_BTN_5:
-				motor_stop();				
+				motor_brake();				
+				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "stopping."); 	
 				break;
 
 			case IR_REMOTE_BTN_6:
 				steering_turn_right();				
-				motor_keepalive ();					
+				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "turn right"); 									motor_keepalive ();					
 				break;
 
 			case IR_REMOTE_BTN_8:
 				motor_decrease_speed();				
+				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "slower!"); 	
+				
 				break;
 				
 			default:
@@ -145,7 +151,7 @@ void button_task (void *data)
 
     if (button_pushed_p (button2))
     {
-        // sleep test
+		usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "sleeping..."); 	
         sleep_now ();
          
     }
@@ -155,8 +161,9 @@ void button_task (void *data)
 
 void drive_task (void *data)
 {
-	motor_update();
-	steering_update();	
+	motor_update ();
+	steering_update ();	
+//	usb_cdc_update ();
 }
 
 
@@ -197,7 +204,8 @@ main (void)
     kernel_taskRegister (button_task, BUTTON_TASK, &button_data, BUTTON_POLL_PERIOD); 
     kernel_taskRegister (led_flash, LED0_FLASH, &led0_data, 500); 
 	kernel_taskRegister (drive_task, DRIVE_TASK, 0, 100);  
-	kernel_taskRegister (ir_task, IR_TASK, 0, 1);  	
+	kernel_taskRegister (ir_task, IR_TASK, 0, 1);
+//	kernel_taskRegister (usb_cdc_update, USB_TASK, 0, 20);
     
     kernel_start ();
     

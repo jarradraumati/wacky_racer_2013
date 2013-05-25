@@ -10,7 +10,7 @@ PERIPHERALS = pit extint pwm
 
 DRIVERS = button pacer usb_cdc
 
-WR_DRIVERS = kernel motor steering ir sleep
+WR_DRIVERS = kernel motor steering ir sleep usb_logging
 
 TARGET = motor_board.bin
 
