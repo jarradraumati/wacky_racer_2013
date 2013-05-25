@@ -8,11 +8,11 @@ WRLIB_DIR = ../../wrlib
 
 PERIPHERALS = pit extint pwm
 
-DRIVERS = button pacer usb_cdc ir_rc5
+DRIVERS = button pacer usb_cdc
 
-WR_DRIVERS = kernel motor steering
+WR_DRIVERS = kernel motor steering ir sleep
 
-TARGET = motor.bin
+TARGET = motor_board.bin
 
 SRC = motor_board.c
 

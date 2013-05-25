@@ -30,15 +30,14 @@
 
 #define BUTTON1_PIO PIO_DEFINE(PORT_A, 27)
 #define BUTTON2_PIO PIO_DEFINE(PORT_A, 28)
-#define BUTTON3_PIO PIO_DEFINE (PORT_A, 20) /* this is IRQ0 on dipswitch 1 for testing wake */
+
+#define EXTINT1_PIO PIO_DEFINE (PORT_A, 30) 
 
 #define PWM1_PIO PIO_DEFINE(PORT_A, 24)
 #define PWM2_PIO PIO_DEFINE(PORT_A, 25)
 
 #define IR_RC5_RX_PIO PIO_DEFINE(PORT_A, 5)
 
-#define EXTINT1_PIO BUTTON2_PIO
-#define WEAPON_PIO PIO_DEFINE (PORT_A, 30)
 
 
 #endif /* TARGET_H  */

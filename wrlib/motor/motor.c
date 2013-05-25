@@ -35,6 +35,7 @@ motor_init (void)
 	motor.pwm = pwm_init (&motor_pwm_cfg);
 	motor.speed = 0;
 	motor.state = MOTOR_STATE_NORMAL;
+	motor_set_timeout (0);	
     pwm_start (motor.pwm);
 }
 
@@ -60,11 +61,30 @@ motor_set_speed(motor_speed_t speed)
 
 		motor.speed = speed;
 	}
+	
+	motor_keepalive ();
+}
+
+void 
+motor_set_timeout (motor_timeout_t timeout)
+{
+	motor.timeout = timeout;
 }
 
 void 
 motor_update(void)
 {
+	/* handle lost comms so we don't crash the car! */
+	if (motor.timeout)
+	{
+		motor.timeout--;		
+		if (!motor.timeout)
+		{
+			motor_set_speed (0);
+		}	 
+	}
+
+	/* handle the servo switching into reverse */
 	if (motor.state == MOTOR_STATE_REVERSE_PENDING)
 	{
 		motor_set_speed (-20);  	// go well past mid point
@@ -72,28 +92,59 @@ motor_update(void)
 	}
 	else if (motor.state == MOTOR_STATE_REVERSE_SET)
 	{
-		motor_set_speed (0);			// set neutral
+		motor_set_speed (0);		// set neutral
 		motor.state = MOTOR_STATE_NEUTRAL_SET;		
 	}
 	else if (motor.state == MOTOR_STATE_NEUTRAL_SET)
 	{
-		motor_set_speed(-MOTOR_SPEED_STEP);
+		if (motor.braking)		
+		{
+			motor_set_speed (-100);
+			motor.state = MOTOR_STATE_FINISHED_BRAKING;
+			motor.braking = 0;
+		}			
+		else
+		{
+			motor_set_speed(-MOTOR_SPEED_STEP_REV);
+			motor.state = MOTOR_STATE_NORMAL;
+		}
+	}
+	else if (motor.state == MOTOR_STATE_FINISHED_BRAKING)	
+	{
 		motor.state = MOTOR_STATE_NORMAL;
-	}	
+		motor_set_speed (0);
+	}
 
+}
+
+void
+motor_brake (void)
+{
+	motor.braking = 1;
+	motor.state = MOTOR_STATE_REVERSE_PENDING;
+}
+
+void
+motor_increase_speed (void)
+{
+	motor.braking = 0;
+	if (motor.speed >= 0)
+		motor_set_speed (motor.speed + MOTOR_SPEED_STEP_FWD);
+	else
+		motor_set_speed (motor.speed + MOTOR_SPEED_STEP_REV);
 }
 
 
 void
-motor_increase_speed(void)
+motor_decrease_speed (void)
 {	
-	motor_set_speed (motor.speed + MOTOR_SPEED_STEP);
-}
-
-void
-motor_decrease_speed(void)
-{	
-	motor_speed_t new_speed = motor.speed - MOTOR_SPEED_STEP;
+	motor_speed_t new_speed = 0;
+	motor.braking = 0;	
+	
+	if (motor.speed >= 0)
+		new_speed = motor.speed - MOTOR_SPEED_STEP_FWD;
+	else
+		new_speed = motor.speed - MOTOR_SPEED_STEP_REV;
 	
 	if (motor.state == MOTOR_STATE_NORMAL)
 	{
@@ -104,6 +155,10 @@ motor_decrease_speed(void)
 	}
 }
 
-
+void
+motor_keepalive(void)
+{
+	motor_set_timeout (MOTOR_TIMEOUT);
+}
 
 

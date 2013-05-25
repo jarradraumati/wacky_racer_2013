@@ -16,17 +16,26 @@
 #define PWM_STEERING_DUTY_MAX 		10.0
 #define PWM_STEERING_DUTY_RANGE_RIGHT	(PWM_STEERING_DUTY_MAX-PWM_STEERING_DUTY_NEUTRAL)		
 #define PWM_STEERING_DUTY_RANGE_LEFT	(PWM_STEERING_DUTY_NEUTRAL-PWM_STEERING_DUTY_MIN)		
-#define STEERING_RAMP_RATE			0.5			  
 
 /* speed jump for increase/decrease speed*/
-#define STEERING_POSITION_STEP 		10
+#define STEERING_POSITION_STEP 		15
+#define STEERING_TIMEOUT 			2
+
 
 typedef int32_t steering_position_t;
+typedef int32_t steering_timeout_t;
+
+typedef enum steering_state
+{
+    STEERING_STATE_NORMAL = 0,
+} steering_state_t;
+
 
 typedef struct steering_struct
 {
     pwm_t pwm;
 	steering_position_t position;
+	steering_timeout_t timeout;
 } steering_t;
 
 
@@ -34,5 +43,6 @@ typedef struct steering_struct
 void steering_init(void);
 void steering_turn_right(void);
 void steering_turn_left(void);
+void steering_update(void); 		/*  call steering update about every 100ms */
 
 #endif /*STEERING_H_*/

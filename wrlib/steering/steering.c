@@ -32,6 +32,7 @@ steering_init (void)
 {
 	steering.pwm = pwm_init (&steering_pwm_cfg);
 	steering.position = 0;
+	steering.timeout = 0;
     pwm_start (steering.pwm);
 }
 
@@ -61,15 +62,41 @@ steering_set_position(steering_position_t position)
 
 
 void
+steering_set_centre(void)
+{	
+	steering_set_position (0);
+}
+
+void 
+steering_set_timeout (steering_timeout_t timeout)
+{
+	steering.timeout = timeout;
+}
+
+void
 steering_turn_right(void)
 {	
-	steering_set_position (steering.position + STEERING_POSITION_STEP);
+	steering_set_position (steering.position - STEERING_POSITION_STEP);
+	steering_set_timeout (STEERING_TIMEOUT);
 }
 
 void
 steering_turn_left(void)
 {	
-	steering_set_position (steering.position - STEERING_POSITION_STEP);
+	steering_set_position (steering.position + STEERING_POSITION_STEP);
+	steering_set_timeout (STEERING_TIMEOUT);	
 }
 
+void 
+steering_update(void)
+{
+	if (steering.timeout)
+	{
+		steering.timeout--;		
+		if (!steering.timeout)
+		{
+			steering_set_centre ();
+		}	 
+	}
+}
 
