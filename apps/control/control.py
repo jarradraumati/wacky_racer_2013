@@ -25,6 +25,9 @@ class App:
         self.button_stop = Button(text="Stop", command=self.say_hi)
         self.button_stop.grid(row = 1,column = 2 )
         
+        self.speed = Scale()
+        self.speed.grid(row = 1,column = 4 )
+        
 
     def say_hi(self):
         print "hi there, everyone!"
