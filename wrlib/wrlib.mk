@@ -8,6 +8,8 @@ ifndef MCU
 $(error MCU undefined, this needs to be defined in the Makefile)
 endif
 
+# Include Files in this folder
+INCLUDES += -I$(WRLIB_DIR)/
 
 # Include the architecture independent driver dependencies.
 include $(WRLIB_DIR)/drivers.mk
