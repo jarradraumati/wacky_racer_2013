@@ -1,5 +1,5 @@
 /*
- * main.c (motor board)
+ * motor_board.c (motor board)
  * Wayne Laker
  *
  * */
@@ -16,12 +16,10 @@
 
 /* mmculibs */
 #include "button.h"
-#include "pacer.h"
 #include "usb_cdc.h"
 
 /* mat91libs */
-#include "pit.h"
-#include "pwm.h"
+#include "adc.h"
 
 /* wrlibs */
 #include "usb_logging.h"
@@ -35,6 +33,11 @@
 #define BUTTON_POLL_PERIOD     100
 
 #define ALL_LEDS LED_GREEN_PIO|LED_RED_PIO|LED0_PIO|LED1_PIO|LED2_PIO|LED3_PIO
+
+
+#define ADC_SPEED_REVERSE	ADC_CHANNEL_4
+#define ADC_SPEED_FORWARD	ADC_CHANNEL_5
+#define ADC_BATTERY_SENSE	ADC_CHANNEL_6
 
 typedef struct state_struct
 {
@@ -62,11 +65,6 @@ static const button_cfg_t button3_cfg =
 {
     .pio = BUTTON3_PIO
 };
-
-static const extint_cfg_t extint1_cfg =
-{
-    .pio = BUTTON3_PIO,
-};
 */
 
 /* Globals */
@@ -74,7 +72,6 @@ uint8_t startup = 1;  // used to stop buttons being pressed on startup
 
 button_t button1;
 button_t button2;
-//button_t button3;
 
 state_t led0_data = {LED0_PIO,0};
 state_t led1_data = {LED1_PIO,0};
@@ -88,7 +85,7 @@ button_task_t button_data = {0};
  *
  * Add a new value whenever you register a new task
  */
-enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK, USB_TASK};
+enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK, USB_TASK, ADC_TASK};
 
 
 void led_flash (void *data)
@@ -97,7 +94,21 @@ void led_flash (void *data)
     pio_output_toggle (state->led);
 }
 
-
+void adc_task (void *data)
+{
+	adc_sample_t value = 0;
+	pio_output_high(LED1_PIO);
+	if ( adc_read_wait (ADC_BATTERY_SENSE, &value) )
+	{
+		pio_output_toggle (LED3_PIO);
+		if (value > 700)
+			pio_output_high (LED2_PIO);	
+		else
+			pio_output_low (LED2_PIO);		
+	}
+	pio_output_low(LED1_PIO);
+		
+}
 
 void ir_task (void *data)
 {
@@ -106,36 +117,36 @@ void ir_task (void *data)
 	
 	if (ir_read_message (&msg) == IR_SUCCESS)
 	{
-		pio_output_toggle (LED2_PIO);
+		pio_output_toggle (LED1_PIO);
 
 		switch(msg.command)
 		{
 			case IR_REMOTE_BTN_2:
 				motor_increase_speed();				
-				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "faster!"); 	
-
 				break;
 
 			case IR_REMOTE_BTN_4:
 				steering_turn_left ();				
-				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "turn left"); 					
-				motor_keepalive ();
 				break;
 
 			case IR_REMOTE_BTN_5:
 				motor_brake();				
-				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "stopping."); 	
 				break;
 
 			case IR_REMOTE_BTN_6:
 				steering_turn_right();				
-				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "turn right"); 									motor_keepalive ();					
 				break;
 
 			case IR_REMOTE_BTN_8:
 				motor_decrease_speed();				
-				usb_logging_send_text("INFO from %s on line %d", __FILE__, __LINE__, "slower!"); 	
-				
+				break;
+
+			case IR_REMOTE_BTN_REWIND:
+				steering_trim_left();				
+				break;
+
+			case IR_REMOTE_BTN_FASTFWD:
+				steering_trim_right();				
 				break;
 				
 			default:
@@ -169,36 +180,35 @@ void drive_task (void *data)
 
 void init(void)
 {
-	/* startup_sequence */
+
+	/* button init */
+    button2 = button_init (&button2_cfg);
+    pio_config_set (button2->pio, PIO_INPUT);
+    button_poll_count_set (BUTTON_POLL_COUNT (BUTTON_POLL_RATE));
+
+	/* led init and startup_sequence */
     pio_config_set (ALL_LEDS, PIO_OUTPUT_LOW);
     delay_ms(1000);
     pio_output_high (ALL_LEDS);
     delay_ms(500);
     pio_output_low (ALL_LEDS);
 
-	/* buttons */
-//	button1 = button_init (&button1_cfg);
-    button2 = button_init (&button2_cfg);
-   // button3 = button_init (&button3_cfg); // this is on one of the dip switch pins with an IRQ for waking up
-    pio_config_set (button2->pio, PIO_INPUT);
-    button_poll_count_set (BUTTON_POLL_COUNT (BUTTON_POLL_RATE));
+//	adc_init (0);
 
+	/* wrlibs */
+    usb_logging_init ();    
+	motor_init ();
+	steering_init ();
+	ir_init ();
+	sleep_init ();	
+    kernel_init ();
 }
 
 
 int
 main (void)
 {
-    usb_logging_init ();
-    /* Wait for usb to do its things*/
-
-	init();
-
-    kernel_init ();
-	motor_init ();
-	steering_init ();
-	ir_init ();
-	sleep_init();
+	init ();
 	
 	/* task period is in ms */
     kernel_taskRegister (button_task, BUTTON_TASK, &button_data, BUTTON_POLL_PERIOD); 
@@ -206,6 +216,8 @@ main (void)
 	kernel_taskRegister (drive_task, DRIVE_TASK, 0, 100);  
 	kernel_taskRegister (ir_task, IR_TASK, 0, 1);
 //	kernel_taskRegister (usb_cdc_update, USB_TASK, 0, 20);
+//	kernel_taskRegister (adc_task, ADC_TASK, 0, 500);
+
     
     kernel_start ();
     

@@ -33,14 +33,15 @@ steering_init (void)
 	steering.pwm = pwm_init (&steering_pwm_cfg);
 	steering.position = 0;
 	steering.timeout = 0;
+	steering.trim = 0.0;
     pwm_start (steering.pwm);
 }
 
 void 
-steering_set_position(steering_position_t position)
+steering_set_position(steering_position_t position, int8_t force_update)
 {	
 	double duty = 0;
-	if (steering.position != position)
+	if (steering.position != position || force_update)
 	{
 		if (position < 0)
 			duty = PWM_STEERING_DUTY_NEUTRAL + PWM_STEERING_DUTY_RANGE_LEFT*position/100;
@@ -48,6 +49,8 @@ steering_set_position(steering_position_t position)
 			duty = PWM_STEERING_DUTY_NEUTRAL + PWM_STEERING_DUTY_RANGE_RIGHT*position/100;
 		else
 			duty = PWM_STEERING_DUTY_NEUTRAL;
+
+		duty += steering.trim;
 
 		if(duty <= PWM_STEERING_DUTY_MIN)
 			duty = PWM_STEERING_DUTY_MIN;
@@ -64,7 +67,7 @@ steering_set_position(steering_position_t position)
 void
 steering_set_centre(void)
 {	
-	steering_set_position (0);
+	steering_set_position (0, 1);
 }
 
 void 
@@ -76,14 +79,14 @@ steering_set_timeout (steering_timeout_t timeout)
 void
 steering_turn_right(void)
 {	
-	steering_set_position (steering.position - STEERING_POSITION_STEP);
+	steering_set_position (steering.position - STEERING_POSITION_STEP, 0);
 	steering_set_timeout (STEERING_TIMEOUT);
 }
 
 void
 steering_turn_left(void)
 {	
-	steering_set_position (steering.position + STEERING_POSITION_STEP);
+	steering_set_position (steering.position + STEERING_POSITION_STEP, 0);
 	steering_set_timeout (STEERING_TIMEOUT);	
 }
 
@@ -98,5 +101,19 @@ steering_update(void)
 			steering_set_centre ();
 		}	 
 	}
+}
+
+void
+steering_trim_left(void)
+{
+	steering.trim += STEERING_TRIM_STEP;
+	steering_set_position (steering.position, 1);
+}
+
+void
+steering_trim_right(void)
+{
+	steering.trim -= STEERING_TRIM_STEP;
+	steering_set_position (steering.position, 1);
 }
 

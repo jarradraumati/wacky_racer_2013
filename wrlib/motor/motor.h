@@ -8,7 +8,7 @@
 #define MOTOR_H_
 
 #include <stdint.h>
-
+#include "pwm.h"
 #define PWM_MOTOR_FREQ_HZ         	50
 
 /* PWM DUTY in percent */

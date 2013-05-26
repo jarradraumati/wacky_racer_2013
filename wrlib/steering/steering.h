@@ -21,9 +21,11 @@
 #define STEERING_POSITION_STEP 		15
 #define STEERING_TIMEOUT 			2
 
+#define STEERING_TRIM_STEP 			0.05
 
 typedef int32_t steering_position_t;
 typedef int32_t steering_timeout_t;
+typedef double steering_trim_t;
 
 typedef enum steering_state
 {
@@ -35,6 +37,7 @@ typedef struct steering_struct
 {
     pwm_t pwm;
 	steering_position_t position;
+	steering_trim_t trim;
 	steering_timeout_t timeout;
 } steering_t;
 
@@ -44,5 +47,7 @@ void steering_init(void);
 void steering_turn_right(void);
 void steering_turn_left(void);
 void steering_update(void); 		/*  call steering update about every 100ms */
+void steering_trim_right(void);
+void steering_trim_left(void);
 
 #endif /*STEERING_H_*/
