@@ -10,17 +10,25 @@
 typedef uint8_t ibp_command;
 typedef uint8_t ibp_info;
 
+#define CMD_NONE 0
+#define COMMS_COMMAND 2
+#define CMD_ASSUME_CTRL 4
 
-enum
-{
-	// Addresses of public data held by the motor board
-	MD_SPEED, MD_FAULT, MD_CHARGE, MD_DIRECTION,
-	// Address of public data held by the camera board
-	CD_PHOTO_READY, CD_PHOTO_LINE, CD_PHOTO_NEXT_LINE, CD_FAULT,
-	// Commands for the motor board
-	MC_LEFT, MC_RIGHT, MC_FORWARD, MC_REVERSE, MC_STOP, MC_BOOST, MC_SLEEP,
-	// Commands for the camera board
-	CC_CAPTURE, CC_SLEEP_CAM, CC_WAKE_CAM, CC_SLEEP
-};
+#define MC_VALUES_START 40
+#define MC_VALUES_STOP 49
+
+#define CC_VALUES_START 50
+#define CC_VALUES_STOP 59
+
+// Addresses of public data held by the motor board
+enum {MD_SPEED, MD_FAULT, MD_CHARGE, MD_DIRECTION};
+// Address of public data held by the camera board
+enum {CD_PHOTO_READY, CD_PHOTO_LINE, CD_PHOTO_NEXT_LINE, CD_FAULT};
+
+// Commands for the motor board
+enum {MC_LEFT = MC_VALUES_START, MC_RIGHT, MC_FORWARD=48, MC_BACK=43, MC_STOP=49};
+
+// Commands for the camera board
+enum {CC_CAPTURE = CC_VALUES_START, CC_SLEEP_CAM, CC_WAKE_CAM, CC_SLEEP};
 
 #endif

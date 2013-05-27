@@ -26,8 +26,8 @@ uint8_t ch;
 enum {BLUETOOTH_COMMS_TASK, ACTION_COMMANDS_TASK};
 
 /* Commands sent from the comms board over bluetooth */
-enum {CMD_NONE = 0x00, CMD_LEFT = 0x30, CMD_RIGHT, CMD_FORWARD, CMD_BACK,
-        CMD_STOP, CMD_ASSUME_CTRL, CMD_CAM_OFF, CMD_CAM_ON};
+//enum {CMD_NONE = 0x00, CMD_LEFT = 0x30, CMD_RIGHT, CMD_FORWARD, CMD_BACK,
+//        CMD_STOP, CMD_ASSUME_CTRL, CMD_CAM_OFF, CMD_CAM_ON};
 
 #define PACER_RATE 1000
 
@@ -40,12 +40,12 @@ static const i2c_bus_cfg_t i2c_bus_cfg =
 
 static const i2c_slave_cfg_t i2c_camera_cfg =
 {
-    .id = 0x32,
+    .id = I2C_CAMERA_ADDR,
 };
 
 static const i2c_slave_cfg_t i2c_motor_cfg =
 {
-    .id = 0x16,
+    .id = I2C_MOTOR_ADDR,
 };
 
 i2c_t i2c_camera;
@@ -84,40 +84,39 @@ bluetooth_comms_task (void *data)
 void
 action_commands_task (void *data)
 {
-    switch (ch) 
-    {
-        case CMD_LEFT:
-            pio_output_toggle (LED_GREEN_PIO);
-            break;
-        case CMD_RIGHT:
-            pio_output_toggle (LED_ORANGE_PIO);
-            break;
-        case CMD_FORWARD:
-            pio_output_toggle (LED_RED_PIO);
-            break;
-        case CMD_BACK:
-            pio_output_toggle (LED_BLUE_PIO);
-            break;
-        case CMD_STOP:
-            break;
-    };
+    
     if (ch != CMD_NONE)
     {
-        // Send interrupt to slaves
-        pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
-        DELAY_US (3);
-        // Set clock back ready for i2c
-        pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
-        DELAY_US (20);
-        i2c_master_addr_write (i2c_camera, COMMS_COMMAND, 1, &ch, 1);
-        
-        // Ensure clock is left in a pullup state
-        pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
-    }
-        
-    
+        if (ch >= MC_VALUES_START && ch <= MC_VALUES_STOP)
+        {
+            // Send interrupt to slaves
+            pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
+            DELAY_US (3);
+            // Set clock back ready for i2c
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
+            DELAY_US (20);
+            i2c_master_addr_write (i2c_motor, COMMS_COMMAND, 1, &ch, 1);
+            
+            // Ensure clock is left in a pullup state
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
 
-    ch = CMD_NONE;
+        }
+        else if (ch >= CC_VALUES_START && ch <= CC_VALUES_STOP)
+        {
+            // Send interrupt to slaves
+            pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
+            DELAY_US (3);
+            // Set clock back ready for i2c
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
+            DELAY_US (20);
+            i2c_master_addr_write (i2c_camera, COMMS_COMMAND, 1, &ch, 1);
+            
+            // Ensure clock is left in a pullup state
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
+        }
+        
+        ch = CMD_NONE;
+    }
 }
 
 
@@ -146,8 +145,8 @@ main ()
     kernel_init ();
     
     
-    kernel_taskRegister (bluetooth_comms_task, BLUETOOTH_COMMS_TASK, btconn, 100);
-    kernel_taskRegister (action_commands_task, ACTION_COMMANDS_TASK, &led1_data, 100);
+    kernel_taskRegister (bluetooth_comms_task, BLUETOOTH_COMMS_TASK, btconn, 10);
+    kernel_taskRegister (action_commands_task, ACTION_COMMANDS_TASK, &led1_data, 15);
     
     kernel_start ();
     

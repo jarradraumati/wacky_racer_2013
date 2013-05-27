@@ -8,6 +8,7 @@
 #define STEERING_H_
 
 #include <stdint.h>
+#include "pwm.h"
 
 #define PWM_STEERING_FREQ_HZ     	50
 

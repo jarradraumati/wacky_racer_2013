@@ -41,4 +41,6 @@
 #define SCL_PIO PIO_DEFINE(PORT_A, 5)
 #define SDA_PIO PIO_DEFINE(PORT_A, 6)
 
+#define EXTINT1_PIO PIO_DEFINE (PORT_A, 30)
+
 #endif /* TARGET_H  */

@@ -54,5 +54,4 @@ void motor_decrease_speed(void);
 void motor_update(void); 			/*  call motor update about every 100ms */
 void motor_brake (void);
 void motor_keepalive(void);
-
 #endif /*MOTOR_H_*/

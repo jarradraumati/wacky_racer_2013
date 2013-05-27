@@ -17,7 +17,8 @@
 
 #include "motor.h"
 
-
+// Prototypes
+void motor_set_timeout (motor_timeout_t timeout);
 static const pwm_cfg_t motor_pwm_cfg =
 {
     .pio = PWM1_PIO,
@@ -46,11 +47,19 @@ motor_set_speed(motor_speed_t speed)
 	if (motor.speed != speed)
 	{
 		if (speed < 0)
-			duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_FWD*speed/100;
-		else if (speed > 0)
-			duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_REV*speed/100;
-		else
-			duty = PWM_MOTOR_DUTY_NEUTRAL;
+                {    
+                    if (speed < -100)
+                        speed = -100;
+                    duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_FWD*speed/100;
+                }
+                else if (speed > 0)
+                {
+                    if (speed > 100)
+                        speed = 100;
+                    duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_REV*speed/100;
+                }
+                else
+                    duty = PWM_MOTOR_DUTY_NEUTRAL;
 
 		if(duty <= PWM_MOTOR_DUTY_MIN)
 			duty = PWM_MOTOR_DUTY_MIN;

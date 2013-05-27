@@ -12,6 +12,9 @@
 #include "delay.h"
 #include "ibp.h"
 #include "usb_logging.h"
+#include "steering.h"
+#include "motor.h"
+
 
 #define EXTINT1_PIO PIO_DEFINE (PORT_A, 30)
 
@@ -72,7 +75,7 @@ static const i2c_bus_cfg_t i2c_bus_cfg =
 
 static const i2c_slave_cfg_t i2c_slave1_cfg =
 {
-    .id = I2C_CAMERA_ADDR,
+    .id = I2C_MOTOR_ADDR,
 };
 
 void
@@ -81,27 +84,38 @@ command_task (void *data)
     if (next_command)
     {
         switch (next_command){
-            case CC_CAPTURE:
+            case MC_LEFT:
+                steering_turn_left ();
                 pio_output_toggle (LED0_PIO);
                 break;
-                
-            case CC_SLEEP_CAM:
+            case MC_RIGHT:
+                steering_turn_right ();
                 pio_output_toggle (LED1_PIO);
                 break;
                 
-            case CC_WAKE_CAM:
-                pio_output_toggle (LED2_PIO);
+            case MC_FORWARD:
+                motor_increase_speed ();
+                pio_output_toggle (LED2_PIO);                
                 break;
                 
-            case CC_SLEEP:
-                pio_output_toggle (LED3_PIO);
+            case MC_BACK:
+                motor_decrease_speed ();
+                pio_output_toggle (LED3_PIO);                
                 break;
-                
+            case MC_STOP:
+                motor_brake ();
+                break;
         }
         
         next_command = 0;
         
     }
+}
+
+void drive_task (void *data)
+{
+        motor_update ();
+        steering_update ();     
 }
 
 int
@@ -125,9 +139,12 @@ main (void)
     usb_logging_init ();
     
     extint_enable (extint1);
+    steering_init ();
+    motor_init ();
     
     kernel_init ();
-    kernel_taskRegister (command_task, 0, &comms_data, 200);
+    kernel_taskRegister (command_task, 0, &comms_data, 10);
+    kernel_taskRegister (drive_task, 1, 0, 100);
     kernel_start ();
 //     
     return 0;

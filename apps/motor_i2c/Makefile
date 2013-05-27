@@ -10,13 +10,13 @@ DRIVERS = bbi2c
 
 PERIPHERALS = extint
 
-WR_DRIVERS = kernel usb_logging
+WR_DRIVERS = kernel usb_logging steering motor
 
-TARGET = i2cs_test1.bin
+TARGET = motor_i2c.bin
 
-SRC = i2cs_test1.c
+SRC = motor_i2c.c
 
-include ../../boards/camera/board.mk
+include ../../boards/motor/board.mk
 include $(WRLIB_DIR)/wrlib.mk
 include $(MMCULIB_DIR)/mmculib.mk
 
