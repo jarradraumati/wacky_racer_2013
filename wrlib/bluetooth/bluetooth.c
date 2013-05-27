@@ -19,7 +19,7 @@ bluetooth_write_ready_p (usart_t usart)
     return usart_write_ready_p(usart);
 }
 int
-bluetootht_read_ready_p (usart_t usart)
+bluetooth_read_ready_p (usart_t usart)
 {
     return usart_read_ready_p(usart);
 }
