@@ -8,9 +8,9 @@ WRLIB_DIR = ../../wrlib
 
 PERIPHERALS = 
 
-DRIVERS = busart bbi2c usb_cdc pacer
+DRIVERS = bbi2c
 
-WR_DRIVERS = kernel usb_logging
+WR_DRIVERS = kernel bluetooth
 
 TARGET = comms.bin
 
