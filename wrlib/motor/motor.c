@@ -75,17 +75,21 @@ void
 motor_update(void)
 {
 	/* handle lost comms so we don't crash the car! */
-	if (motor.timeout)
+	//if (motor.timeout)
+	//{
+	//	motor.timeout--;		
+	//	if (!motor.timeout)
+	//	{
+	//		motor_set_speed (0);
+	//	}	 
+	//}
+	if (motor.state == MOTOR_STATE_NORMAL)
 	{
-		motor.timeout--;		
-		if (!motor.timeout)
-		{
-			motor_set_speed (0);
-		}	 
+		if (motor.speed > 0)
+			motor_set_speed (motor.speed-1);
 	}
-
 	/* handle the servo switching into reverse */
-	if (motor.state == MOTOR_STATE_REVERSE_PENDING)
+	else if (motor.state == MOTOR_STATE_REVERSE_PENDING)
 	{
 		motor_set_speed (-20);  	// go well past mid point
 		motor.state = MOTOR_STATE_REVERSE_SET;
@@ -148,7 +152,7 @@ motor_decrease_speed (void)
 	
 	if (motor.state == MOTOR_STATE_NORMAL)
 	{
-		if (motor.speed == 0 && new_speed < 0)
+		if (motor.speed >= 0 && new_speed < 0)
 			motor.state = MOTOR_STATE_REVERSE_PENDING;
 		else	
 			motor_set_speed (new_speed);
@@ -158,7 +162,7 @@ motor_decrease_speed (void)
 void
 motor_keepalive(void)
 {
-	motor_set_timeout (MOTOR_TIMEOUT);
+	//motor_set_timeout (MOTOR_TIMEOUT);
 }
 
 

@@ -16,6 +16,9 @@
 #define IR_REMOTE_BTN_5 	0x1B
 #define IR_REMOTE_BTN_6 	0x1E
 #define IR_REMOTE_BTN_8 	0x21
+#define IR_REMOTE_BTN_REWIND 	0x2D
+#define IR_REMOTE_BTN_FASTFWD 	0x33
+
 #define IR_REMOTE_ADDRESS	0x07	// the pinnacle remote
 
 typedef int16_t ir_toggle_t;

@@ -6,9 +6,9 @@ MMCULIB_DIR = ../../mmculib
 
 WRLIB_DIR = ../../wrlib
 
-PERIPHERALS = pit extint pwm
+PERIPHERALS = adc
 
-DRIVERS = button pacer usb_cdc
+DRIVERS = button usb_cdc
 
 WR_DRIVERS = kernel motor steering ir sleep usb_logging
 
