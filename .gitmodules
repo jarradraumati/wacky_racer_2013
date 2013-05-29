@@ -3,4 +3,4 @@
 	url = git://github.com/mph-/mat91lib.git
 [submodule "mmculib"]
 	path = mmculib
-	url = https://github.com/mph-/mmculib.git
+	url = git://github.com/mph-/mmculib.git
