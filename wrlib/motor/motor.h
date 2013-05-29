@@ -70,4 +70,5 @@ void motor_stop (void);
 motor_speed_t motor_pause(void);
 void motor_resume(motor_speed_t speed);
 motor_direction_t motor_direction_get(void);
+motor_speed_t motor_speed_get(void);
 #endif /*MOTOR_H_*/

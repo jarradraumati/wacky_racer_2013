@@ -73,7 +73,8 @@ static void handler (void)
         addr = 0;
 
     if (ret == 1)
-        ret = i2c_slave_write (i2c_slave1, comms_data[addr], 1, 1000);
+        ret = i2c_slave_write (i2c_slave1, &comms_data[addr], 1, 1000);
+		 
     if (ret == 2)
     {
         if (buffer[0] == COMMS_COMMAND)
@@ -165,8 +166,8 @@ void monitor_task (void *data)
 	if ( adc_read_wait (ADC_BATTERY_SENSE, &value) )
 	{
 		monitor->battery_voltage = value * 3.3 * 3 / 1024;
-		//comms_data[MD_CHARGE-MD_VALUES_START] = (uint8_t)(monitor->battery_voltage*10); // change to percentage
-		comms_data[MD_CHARGE-MD_VALUES_START] = 5;
+		comms_data[MD_CHARGE-MD_VALUES_START] = (uint8_t)(monitor->battery_voltage*10); 
+		//comms_data[MD_CHARGE-MD_VALUES_START] = 5;
 		
 		if (monitor->battery_voltage < BATTERY_LOW_VOLTAGE)
 		//if (value < 620)
@@ -192,7 +193,7 @@ void monitor_task (void *data)
 	
 	if (direction)
 	{
-		monitor->motor_speed = value * 3.3 / 1024;
+		monitor->motor_speed = value * 3.3 / 1023;
 		
 		if (monitor->motor_speed < 0.4 || monitor->motor_speed > SPEED_SLOW)
 		{
@@ -222,21 +223,21 @@ void monitor_task (void *data)
 		}
 	}
 
-	if (!monitor->motor_speed)
-		comms_data[MD_SPEED-MD_VALUES_START] = 0;
+	//if (!monitor->motor_speed)
+	if ( motor_speed_get() == 0)
+		comms_data[MD_SPEED-MD_VALUES_START] = 100;
 	else
 	{
-/*		comms_data[MD_SPEED-MD_VALUES_START] = 100 - (uint8_t) ((monitor->motor_speed - 0.8) / 0.017 ) ;
-		
-		if (direction == MOTOR_REVERSE)
-			comms_data[MD_SPEED-MD_VALUES_START] 
-		comms_data[MD_SPEED-MD_VALUES_START] += 100;		
-*/
+		//monitor->motor_speed = 100 - ((monitor->motor_speed - 0.8) / 0.017 ) ;
+		//monitor->motor_speed -= 0.8;
+		//monitor->motor_speed *= 100;
+		//monitor->motor_speed /= 1.7 ;
+		//if (direction == MOTOR_REVERSE)
+		//	monitor->motor_speed = -monitor->motor_speed; 
+		//comms_data[MD_SPEED-MD_VALUES_START] = (uint8_t)(200 - monitor->motor_speed);		
+	
 
-		monitor->motor_speed = 100 - ((monitor->motor_speed - 0.8) / 0.017 ) ;
-		if (direction == MOTOR_REVERSE)
-			monitor->motor_speed = -monitor->motor_speed; 
-		comms_data[MD_SPEED-MD_VALUES_START] = (uint8_t)(monitor->motor_speed + 100);		
+		comms_data[MD_SPEED-MD_VALUES_START] = (uint8_t)(value/10);		
 	}
 }
 
@@ -270,7 +271,7 @@ command_task (void *data)
                 motor_stop ();
                 break;
 
-     }
+		}
 
         next_command = 0;
         
@@ -389,7 +390,7 @@ main (void)
     /* initialise comms_data */
     comms_data[MD_SPEED-MD_VALUES_START] = 0;
     comms_data[MD_FAULT-MD_VALUES_START] = 0;
-    comms_data[MD_CHARGE-MD_VALUES_START] = 10;
+    comms_data[MD_CHARGE-MD_VALUES_START] = 0;
 
 	extint_enable (extint1);
 
