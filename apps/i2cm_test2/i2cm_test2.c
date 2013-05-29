@@ -6,6 +6,7 @@
 #include "i2c_master.h"
 #include "pacer.h"
 #include "delay.h"
+#include "ibp.h"
 
 #define SDA_PIO PIO_DEFINE(PORT_A, 3)
 #define SCL_PIO PIO_DEFINE(PORT_A, 4)
@@ -37,22 +38,22 @@ main (void)
 
     while (1)
     {
-        uint8_t tx[] = {1, 2, 3, 4};
+        uint8_t tx[] = {1};
         uint8_t rx[] = {0, 0, 0, 0};
         i2c_addr_t addr = 1;
-
+        // Ensure clock is able to be pulled high
+        pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
         pacer_wait ();
         pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
         DELAY_US (3);
         // Set clock back ready for i2c
         pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
-        DELAY_US (10);
-        //i2c_master_addr_write (i2c_slave1, addr, 1, tx, sizeof(tx));
+        DELAY_US (20);
+        i2c_master_addr_write (i2c_slave1, COMMS_COMMAND, 1, tx, sizeof(tx));
         // Trigger interrupt to inform slave an i2c transaction is going to occur
 
         
-        i2c_master_addr_read (i2c_slave1, 4, 1, rx, sizeof(rx));
+        //i2c_master_addr_read (i2c_slave1, CD_FAULT, 1, rx, 1);
         /* TODO: check if rx matches tx.  */
     }
 }
-

@@ -6,7 +6,7 @@ MMCULIB_DIR = ../../mmculib
 
 WRLIB_DIR = ../../wrlib
 
-DRIVERS = bbi2c
+DRIVERS = bbi2c tcm8230
 
 PERIPHERALS = extint
 

@@ -65,5 +65,5 @@ uint8_t kernel_taskRegister (void (*enter_task)(void *), uint8_t id, void *data,
 void kernel_start (void);
 void kernelTaskPeriodSet (uint8_t task_id, uint32_t period);
 void kernelTaskBlocked (uint8_t task_id);
-
+void kernelTaskReady (uint8_t task_id);
 #endif /*KERNEL_H_*/

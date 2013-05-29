@@ -8,6 +8,8 @@ WRLIB_DIR = ../../wrlib
 
 DRIVERS = bbi2c tcm8230
 
+PERIPHERALS = extint
+
 WR_DRIVERS = kernel
 
 TARGET = camera.bin

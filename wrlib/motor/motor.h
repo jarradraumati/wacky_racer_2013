@@ -16,7 +16,11 @@
 #define PWM_MOTOR_DUTY_NEUTRAL     	7.0
 #define PWM_MOTOR_DUTY_MAX      	11.5
 #define PWM_MOTOR_DUTY_RANGE_FWD 	(PWM_MOTOR_DUTY_MAX-PWM_MOTOR_DUTY_NEUTRAL)		
-#define PWM_MOTOR_DUTY_RANGE_REV 	(PWM_MOTOR_DUTY_NEUTRAL-PWM_MOTOR_DUTY_MIN)		
+#define PWM_MOTOR_DUTY_RANGE_REV 	(PWM_MOTOR_DUTY_NEUTRAL-PWM_MOTOR_DUTY_MIN)
+
+/* Set some limits for speed */
+#define MAX_FOR_SPEED 20
+#define MAX_REV_SPEED 100
 
 /* speed jump for increase/decrease speed*/
 #define MOTOR_SPEED_STEP_FWD 			5
@@ -34,6 +38,13 @@ typedef enum motor_state
 	MOTOR_STATE_FINISHED_BRAKING	
 } motor_state_t;
 
+typedef enum motor_direction
+{
+    MOTOR_UNDEFINED = 0,
+	MOTOR_FORWARD,
+	MOTOR_REVERSE
+} motor_direction_t;
+
 
 typedef int32_t motor_speed_t;
 typedef int32_t motor_timeout_t;
@@ -42,7 +53,8 @@ typedef struct motor_struct
 {
     pwm_t pwm;
 	motor_speed_t speed;
-	uint8_t braking;	
+	uint8_t braking;
+	motor_direction_t direction;
 	motor_state_t state;
 	motor_timeout_t timeout;
 } motor_t;
@@ -54,4 +66,9 @@ void motor_decrease_speed(void);
 void motor_update(void); 			/*  call motor update about every 100ms */
 void motor_brake (void);
 void motor_keepalive(void);
+
+
+motor_speed_t motor_pause(void);
+void motor_resume(motor_speed_t speed);
+motor_direction_t motor_direction_get(void);
 #endif /*MOTOR_H_*/
