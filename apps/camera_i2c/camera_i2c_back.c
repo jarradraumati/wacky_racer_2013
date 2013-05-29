@@ -68,7 +68,6 @@ static void handler (void)
                         comms_data[CD_PHOTO_READY-ARRAY_OFFSET] = 0;
                     }
                 }
-                *comms_data[CD_FAULT-ARRAY_OFFSET] = ret + 20;
             }
         }
         
@@ -164,7 +163,7 @@ command_task (void *data)
                 break;
             case CC_SLEEP:
                 next_command = 0; // Make sure we don't sleep when we wake
-                //camera_sleep ();
+                camera_sleep ();
                 
         }
         next_command = 0;
@@ -197,7 +196,7 @@ main (void)
     // Register Tasks for kernel
     kernel_taskRegister (command_task, COMMAND_TASK, &comms_data, 200);
     kernel_taskRegister (capture_task, CAPTURE_TASK, 0, 500);
-    kernel_taskRegister (photo_ready_flash_task, PHOTO_READY_FLASH_TASK, 0, 200);
+    kernel_taskRegister (capture_task, PHOTO_READY_FLASH_TASK, 0, 200);
     
     // Block any currently uneeded task
     kernelTaskBlocked (CAPTURE_TASK);

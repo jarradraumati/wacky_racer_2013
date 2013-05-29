@@ -15,8 +15,11 @@
 #include "kernel.h"
 #include "ibp.h"
 
+#define IMAGE_SIZE (95 * 128 * 2)
 /* Globals */
 uint8_t ch;
+
+int image_bytes_left = IMAGE_SIZE;
 
 /* ID of every task. Global so each task
  * may interact with other tasks.
@@ -87,6 +90,8 @@ action_commands_task (void *data)
 {
     uint8_t rx[130] = {0};
     int i;
+    i2c_ret_t ret;
+    int to_read;
     
     bluetooth_t btconn = data;
     
@@ -128,8 +133,29 @@ action_commands_task (void *data)
             pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
             DELAY_US (20);
             i2c_master_addr_read (i2c_camera, ch, 1, rx, 1);
+            
+            // Transmit if photo ready over bluetooth
+            bluetooth_send_command (btconn, rx[0]);
         }
         else if (ch == CD_PHOTO_LINE)
+        {
+            to_read = image_bytes_left < 128 ? image_bytes_left : 128;
+            // Send interrupt to slaves
+            pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
+            DELAY_US (3);
+            // Set clock back ready for i2c
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
+            DELAY_US (20);
+            ret = i2c_master_addr_read (i2c_camera, ch, 1, rx, to_read);  
+            image_bytes_left -= ret;
+            if (image_bytes_left <= 0)
+                image_bytes_left = IMAGE_SIZE;
+            // Transmit back data over bluetooth
+            for (i = 0; i < ret; i++){
+                bluetooth_send_command (btconn, rx[i]);
+            }
+        }
+        else if (ch == CD_FAULT)
         {
             // Send interrupt to slaves
             pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
@@ -137,14 +163,10 @@ action_commands_task (void *data)
             // Set clock back ready for i2c
             pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
             DELAY_US (20);
-            i2c_master_addr_read (i2c_camera, ch, 1, rx, 128);  
+            i2c_master_addr_read (i2c_camera, ch, 1, rx, 1);
             
-            // Transmit back data over bluetooth
-            
-            for (i = 0; i < 128; i++){
-                bluetooth_send_command (btconn, rx[i]);
-            }
-
+            // Transmit if photo ready over bluetooth
+            bluetooth_send_command (btconn, rx[0]);
         }
             
         ch = CMD_NONE;
@@ -155,19 +177,11 @@ action_commands_task (void *data)
 int
 main ()
 {
-    state_t led1_data = {LED_GREEN_PIO};
-    state_t led2_data = {LED_ORANGE_PIO};
-    state_t led3_data = {LED_RED_PIO};
-    state_t led4_data = {LED_BLUE_PIO};
     pio_config_set (LED_GREEN_PIO, PIO_OUTPUT_HIGH);
     pio_config_set (LED_ORANGE_PIO, PIO_OUTPUT_HIGH);
     pio_config_set (LED_RED_PIO, PIO_OUTPUT_HIGH);
     pio_config_set (LED_BLUE_PIO, PIO_OUTPUT_HIGH);
 
-    int empty = 0;
-    
-
-    
     /* Initialise i2c */
     i2c_motor = i2c_master_init (&i2c_bus_cfg, &i2c_motor_cfg);
     i2c_camera = i2c_master_init (&i2c_bus_cfg, &i2c_camera_cfg);
