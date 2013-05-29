@@ -8,7 +8,7 @@ WRLIB_DIR = ../../wrlib
 
 PERIPHERALS = adc
 
-DRIVERS = button usb_cdc
+DRIVERS = button usb_cdc bbi2c
 
 WR_DRIVERS = kernel motor steering ir sleep usb_logging
 
