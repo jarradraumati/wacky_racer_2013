@@ -142,6 +142,14 @@ motor_brake (void)
 		motor.state = MOTOR_STATE_REVERSE_PENDING;
 }
 
+
+void
+motor_stop (void)
+{
+	motor_set_speed (0);
+}
+
+
 void
 motor_increase_speed (void)
 {

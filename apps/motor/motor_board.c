@@ -67,13 +67,13 @@ static void handler (void)
 
     ret = i2c_slave_read (i2c_slave1, buffer, sizeof (buffer), 10000);
 
-    addr = buffer[0];
+    addr = buffer[0]-MD_VALUES_START;
 
     if (addr >= sizeof (comms_data))
         addr = 0;
 
     if (ret == 1)
-        ret = i2c_slave_write (i2c_slave1, &comms_data[addr], 1, 1000);
+        ret = i2c_slave_write (i2c_slave1, comms_data[addr], 1, 1000);
     if (ret == 2)
     {
         if (buffer[0] == COMMS_COMMAND)
@@ -165,8 +165,9 @@ void monitor_task (void *data)
 	if ( adc_read_wait (ADC_BATTERY_SENSE, &value) )
 	{
 		monitor->battery_voltage = value * 3.3 * 3 / 1024;
-	    comms_data[MD_CHARGE] = (uint8_t)(monitor->battery_voltage*10); // change to percentage
-
+		//comms_data[MD_CHARGE-MD_VALUES_START] = (uint8_t)(monitor->battery_voltage*10); // change to percentage
+		comms_data[MD_CHARGE-MD_VALUES_START] = 5;
+		
 		if (monitor->battery_voltage < BATTERY_LOW_VOLTAGE)
 		//if (value < 620)
 			pio_output_high (LED_RED_PIO);	
@@ -222,12 +223,20 @@ void monitor_task (void *data)
 	}
 
 	if (!monitor->motor_speed)
-		comms_data[MD_SPEED] = 0;
+		comms_data[MD_SPEED-MD_VALUES_START] = 0;
 	else
 	{
-		comms_data[MD_SPEED] = 100 - (uint8_t) ((monitor->motor_speed - 0.8) / 0.017 ) ;
+/*		comms_data[MD_SPEED-MD_VALUES_START] = 100 - (uint8_t) ((monitor->motor_speed - 0.8) / 0.017 ) ;
+		
 		if (direction == MOTOR_REVERSE)
-			comms_data[MD_SPEED] += 100;
+			comms_data[MD_SPEED-MD_VALUES_START] 
+		comms_data[MD_SPEED-MD_VALUES_START] += 100;		
+*/
+
+		monitor->motor_speed = 100 - ((monitor->motor_speed - 0.8) / 0.017 ) ;
+		if (direction == MOTOR_REVERSE)
+			monitor->motor_speed = -monitor->motor_speed; 
+		comms_data[MD_SPEED-MD_VALUES_START] = (uint8_t)(monitor->motor_speed + 100);		
 	}
 }
 
@@ -237,7 +246,8 @@ command_task (void *data)
 {
     if (next_command)
     {
- /*       switch (next_command){
+		switch (next_command){
+
             case MC_LEFT:
                 steering_turn_left ();
                 pio_output_toggle (LED0_PIO);
@@ -252,16 +262,16 @@ command_task (void *data)
                 pio_output_toggle (LED2_PIO);                
                 break;
                 
-            case MC_BACK:
+            case MC_REVERSE:
                 motor_decrease_speed ();
                 pio_output_toggle (LED3_PIO);                
                 break;
-            case MC_STOP:
-                motor_brake ();
+            case MC_STOP_MOTOR:
+                motor_stop ();
                 break;
 
      }
-*/
+
         next_command = 0;
         
     }
@@ -377,9 +387,9 @@ main (void)
     extint1 = extint_init (&extint1_cfg);
 
     /* initialise comms_data */
-    comms_data[MD_SPEED] = 0;
-    comms_data[MD_FAULT] = 0;
-    comms_data[MD_CHARGE] = 0;
+    comms_data[MD_SPEED-MD_VALUES_START] = 0;
+    comms_data[MD_FAULT-MD_VALUES_START] = 0;
+    comms_data[MD_CHARGE-MD_VALUES_START] = 10;
 
 	extint_enable (extint1);
 

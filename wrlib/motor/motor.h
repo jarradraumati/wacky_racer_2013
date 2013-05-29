@@ -66,8 +66,7 @@ void motor_decrease_speed(void);
 void motor_update(void); 			/*  call motor update about every 100ms */
 void motor_brake (void);
 void motor_keepalive(void);
-
-
+void motor_stop (void);
 motor_speed_t motor_pause(void);
 void motor_resume(motor_speed_t speed);
 motor_direction_t motor_direction_get(void);
