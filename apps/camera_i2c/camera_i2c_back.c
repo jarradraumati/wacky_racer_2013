@@ -51,15 +51,19 @@ static void handler (void)
 
     if (ret == 1)
     {
+        // Have not received photo line command.
         if (buffer[0] != CD_PHOTO_LINE)
-            ret = i2c_slave_write (i2c_slave1, comms_data[addr], 130, 1000);
+            ret = i2c_slave_write (i2c_slave1, comms_data[addr], 130, 1000); // Return data requested.
         else
         {
+            // check if photo ready.
             if (comms_data[CD_PHOTO_READY-ARRAY_OFFSET])
             {
                 ret = i2c_slave_write (i2c_slave1, comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET], 130, 1000);
                 if (ret > 0)
                 {
+                    ret++;
+                    *comms_data[CD_FAULT - ARRAY_OFFSET] = ret;
                     comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET] += ret;
                     if ((comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET] - image) == image_size)
                     {
@@ -163,7 +167,7 @@ command_task (void *data)
                 break;
             case CC_SLEEP:
                 next_command = 0; // Make sure we don't sleep when we wake
-                camera_sleep ();
+                //camera_sleep ();
                 
         }
         next_command = 0;
@@ -196,7 +200,7 @@ main (void)
     // Register Tasks for kernel
     kernel_taskRegister (command_task, COMMAND_TASK, &comms_data, 200);
     kernel_taskRegister (capture_task, CAPTURE_TASK, 0, 500);
-    kernel_taskRegister (capture_task, PHOTO_READY_FLASH_TASK, 0, 200);
+    kernel_taskRegister (photo_ready_flash_task, PHOTO_READY_FLASH_TASK, 0, 200);
     
     // Block any currently uneeded task
     kernelTaskBlocked (CAPTURE_TASK);

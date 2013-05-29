@@ -16,7 +16,11 @@
 #define PWM_MOTOR_DUTY_NEUTRAL     	7.0
 #define PWM_MOTOR_DUTY_MAX      	11.5
 #define PWM_MOTOR_DUTY_RANGE_FWD 	(PWM_MOTOR_DUTY_MAX-PWM_MOTOR_DUTY_NEUTRAL)		
-#define PWM_MOTOR_DUTY_RANGE_REV 	(PWM_MOTOR_DUTY_NEUTRAL-PWM_MOTOR_DUTY_MIN)		
+#define PWM_MOTOR_DUTY_RANGE_REV 	(PWM_MOTOR_DUTY_NEUTRAL-PWM_MOTOR_DUTY_MIN)
+
+/* Set some limits for speed */
+#define MAX_FOR_SPEED 20
+#define MAX_REV_SPEED 100
 
 /* speed jump for increase/decrease speed*/
 #define MOTOR_SPEED_STEP_FWD 			5

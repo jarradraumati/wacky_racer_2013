@@ -51,15 +51,19 @@ static void handler (void)
 
     if (ret == 1)
     {
+        // Have not received photo line command.
         if (buffer[0] != CD_PHOTO_LINE)
-            ret = i2c_slave_write (i2c_slave1, comms_data[addr], 130, 1000);
+            ret = i2c_slave_write (i2c_slave1, comms_data[addr], 130, 1000); // Return data requested.
         else
         {
+            // check if photo ready.
             if (comms_data[CD_PHOTO_READY-ARRAY_OFFSET])
             {
                 ret = i2c_slave_write (i2c_slave1, comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET], 130, 1000);
                 if (ret > 0)
                 {
+                    ret++;
+                    *comms_data[CD_FAULT - ARRAY_OFFSET] = ret;
                     comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET] += ret;
                     if ((comms_data[CD_PHOTO_NEXT_LINE-ARRAY_OFFSET] - image) == image_size)
                     {
@@ -68,7 +72,6 @@ static void handler (void)
                         comms_data[CD_PHOTO_READY-ARRAY_OFFSET] = 0;
                     }
                 }
-                *comms_data[CD_FAULT-ARRAY_OFFSET] = ret + 20;
             }
         }
         

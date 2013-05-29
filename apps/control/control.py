@@ -18,6 +18,7 @@ MC_LEFT, MC_RIGHT, MC_FORWARD, MC_BACK, MC_STOP, MC_SLEEP = [i for i in range (s
 CC_CAPTURE, CC_SLEEP_CAM, CC_WAKE_CAM, CC_SLEEP = [i for i in range (start_cc, start_cc+num_cc)]
 CD_PHOTO_READY = 70
 CD_PHOTO_LINE = 71
+CD_FAULT = 73
 
 BUFFER = 1024
 
@@ -36,15 +37,16 @@ def select_wait (r,w,e):
         # Deal with sockets ready to be read
         # print readable
         for ready in readable:
-            #print ("An event happened, processing it")
+            print ("An event happened, processing it")
             recv_data, recv_addr = ready.recvfrom (BUFFER)
             for i in recv_data:
-                picture_out.write(str(hex(ord(i))))
-                picture_out.write (",")
-                recvd_bytes = recvd_bytes + 1
-                if (recvd_bytes % 256 == 0):
-                    picture_out.write(" : %d\n" % line_num)
-                    line_num = line_num + 1
+                print (str(hex(ord(i))))
+                #picture_out.write(str(hex(ord(i))))
+                #picture_out.write (",")
+                #recvd_bytes = recvd_bytes + 1
+                #if (recvd_bytes % 256 == 0):
+                    #picture_out.write(" : %d\n" % line_num)
+                    #line_num = line_num + 1
                     
 
 
@@ -86,7 +88,7 @@ class App:
         self.button_connect = Button(text="Take Photo", command= lambda: self.send_command (CC_CAPTURE))
         self.button_connect.grid(row = 6,column = 1 )
         
-        self.button_connect = Button(text="CAM Sleep", command= lambda: self.send_command (CC_SLEEP_CAM))
+        self.button_connect = Button(text="Cam Fault", command= lambda: self.send_command (CD_FAULT))
         self.button_connect.grid(row = 6,column = 2 )
         
         self.button_connect = Button(text="CAM Wake", command= lambda: self.send_command (CC_WAKE_CAM))
