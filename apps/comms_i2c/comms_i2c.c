@@ -97,6 +97,7 @@ action_commands_task (void *data)
     
     if (ch != CMD_NONE)
     {
+    	// Motor commands.
         if (ch >= MC_VALUES_START && ch <= MC_VALUES_STOP)
         {
             // Send interrupt to slaves
@@ -110,6 +111,19 @@ action_commands_task (void *data)
             // Ensure clock is left in a pullup state
             pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
 
+        }
+        else if (ch >= MD_VALUES_START && ch <= MD_VALUES_STOP)
+        {
+            // Send interrupt to slaves
+            pio_config_set (i2c_bus_cfg.scl, PIO_OUTPUT_LOW);
+            DELAY_US (3);
+            // Set clock back ready for i2c
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
+            DELAY_US (20);
+            i2c_master_addr_write (i2c_motor, COMMS_COMMAND, 1, &ch, 1);
+
+            // Ensure clock is left in a pullup state
+            pio_config_set (i2c_bus_cfg.scl, PIO_PULLUP);
         }
         else if (ch >= CC_VALUES_START && ch <= CC_VALUES_STOP)
         {
