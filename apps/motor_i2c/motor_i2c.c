@@ -112,20 +112,25 @@ command_task (void *data)
     }
 }
 
-void drive_task (void *data)
+void motor_task (void *data)
 {
-        motor_update ();
-        steering_update ();     
+        motor_update ();   
 }
 
+void steering_task (void *data)
+{
+        steering_update ();     
+}
 int
 main (void)
 {
     
 
 
+    pio_config_set (LED0_PIO, PIO_OUTPUT_HIGH);
     pio_config_set (LED1_PIO, PIO_OUTPUT_HIGH);
     pio_config_set (LED2_PIO, PIO_OUTPUT_HIGH);
+    pio_config_set (LED3_PIO, PIO_OUTPUT_HIGH);
     i2c_slave1 = i2c_slave_init (&i2c_bus_cfg, &i2c_slave1_cfg);
     extint1 = extint_init (&extint1_cfg);
     
@@ -144,7 +149,8 @@ main (void)
     
     kernel_init ();
     kernel_taskRegister (command_task, 0, &comms_data, 10);
-    kernel_taskRegister (drive_task, 1, 0, 100);
+    kernel_taskRegister (motor_task, 1, 0, 100);
+    kernel_taskRegister (steering_task, 2, 0, 300);
     kernel_start ();
 //     
     return 0;

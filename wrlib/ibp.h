@@ -20,13 +20,15 @@ typedef uint8_t ibp_info;
 #define CC_VALUES_START 50
 #define CC_VALUES_STOP 59
 
+#define ARRAY_OFFSET 70
+
 // Addresses of public data held by the motor board
 enum {MD_SPEED, MD_FAULT, MD_CHARGE, MD_DIRECTION};
 // Address of public data held by the camera board
-enum {CD_PHOTO_READY, CD_PHOTO_LINE, CD_PHOTO_NEXT_LINE, CD_FAULT};
+enum {CD_PHOTO_READY=ARRAY_OFFSET, CD_PHOTO_LINE, CD_PHOTO_NEXT_LINE, CD_FAULT};
 
 // Commands for the motor board
-enum {MC_LEFT = MC_VALUES_START, MC_RIGHT, MC_FORWARD=48, MC_BACK=43, MC_STOP=49};
+enum {MC_LEFT = MC_VALUES_START, MC_RIGHT, MC_FORWARD, MC_BACK, MC_STOP};
 
 // Commands for the camera board
 enum {CC_CAPTURE = CC_VALUES_START, CC_SLEEP_CAM, CC_WAKE_CAM, CC_SLEEP};
