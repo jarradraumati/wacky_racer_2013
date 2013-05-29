@@ -35,9 +35,16 @@
 #define ALL_LEDS LED_GREEN_PIO|LED_RED_PIO|LED0_PIO|LED1_PIO|LED2_PIO|LED3_PIO
 
 
-#define ADC_SPEED_REVERSE	ADC_CHANNEL_4
-#define ADC_SPEED_FORWARD	ADC_CHANNEL_5
+#define ADC_SPEED_FORWARD	ADC_CHANNEL_4
+#define ADC_SPEED_REVERSE	ADC_CHANNEL_5
 #define ADC_BATTERY_SENSE	ADC_CHANNEL_6
+#define BATTERY_LOW_VOLTAGE 6.5
+#define SPEED_SLOW 2.4
+#define SPEED_MEDIUM 1.7
+#define SPEED_FAST 1.4
+#define SPEED_BUFFER 0.7
+
+
 
 typedef struct state_struct
 {
@@ -49,6 +56,12 @@ typedef struct button_task_struct
 {
     uint32_t counter;
 } button_task_t;
+
+typedef struct monitor_task_struct
+{
+    double battery_voltage;
+	double motor_speed;
+} monitor_task_t;
 
 /*static const button_cfg_t button1_cfg =
 {
@@ -85,7 +98,7 @@ button_task_t button_data = {0};
  *
  * Add a new value whenever you register a new task
  */
-enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK, USB_TASK, ADC_TASK};
+enum {LED0_FLASH, BUTTON_TASK, DRIVE_TASK, IR_TASK, USB_TASK, MONITOR_TASK};
 
 
 void led_flash (void *data)
@@ -94,20 +107,71 @@ void led_flash (void *data)
     pio_output_toggle (state->led);
 }
 
-void adc_task (void *data)
+void monitor_task (void *data)
 {
+	monitor_task_t* monitor = data;
 	adc_sample_t value = 0;
-	pio_output_high(LED1_PIO);
+	motor_direction_t direction;
+	static uint8_t stopped = 1;
+	
+	 // this needs to be done when motors are stopped, maybe
+	 //        in separate task enabled when motors off?
 	if ( adc_read_wait (ADC_BATTERY_SENSE, &value) )
 	{
-		pio_output_toggle (LED3_PIO);
-		if (value > 700)
-			pio_output_high (LED2_PIO);	
+		monitor->battery_voltage = value * 3.3 * 3 / 1024;
+	
+		if (monitor->battery_voltage < BATTERY_LOW_VOLTAGE)
+		//if (value < 620)
+			pio_output_high (LED_RED_PIO);	
 		else
-			pio_output_low (LED2_PIO);		
+			pio_output_low (LED_RED_PIO);
 	}
-	pio_output_low(LED1_PIO);
+	
+	// decide which ADC to read and read it
+	direction = motor_direction_get();
+	switch (direction)
+	{
+		case MOTOR_FORWARD:
+			 adc_read_wait (ADC_SPEED_FORWARD, &value);
+			 break;
+		case MOTOR_REVERSE:
+			 adc_read_wait (ADC_SPEED_REVERSE, &value);
+			 break;
+		default:
+		break;
 		
+	}
+	if (direction)
+	{
+		monitor->motor_speed = value * 3.3 / 1024;
+		
+		if (monitor->motor_speed < 0.4 || monitor->motor_speed > SPEED_SLOW)
+		{
+			stopped = 1;
+			pio_output_low (LED3_PIO);	
+			pio_output_low (LED2_PIO);	
+			pio_output_low (LED1_PIO);
+		}
+		else if (monitor->motor_speed < SPEED_SLOW && monitor->motor_speed > SPEED_MEDIUM)
+		{
+			stopped = 0;
+			pio_output_low (LED3_PIO);
+			pio_output_low (LED2_PIO);
+			pio_output_high (LED1_PIO);	
+		}
+		else if (monitor->motor_speed < SPEED_MEDIUM && monitor->motor_speed > SPEED_FAST && !stopped)
+		{
+			pio_output_low (LED3_PIO);
+			pio_output_high (LED2_PIO);	
+			pio_output_high (LED1_PIO);	
+		}
+		else if (monitor->motor_speed < SPEED_FAST && monitor->motor_speed > SPEED_BUFFER && !stopped)
+		{
+			pio_output_high (LED3_PIO);	
+			pio_output_high (LED2_PIO);	
+			pio_output_high (LED1_PIO);	
+		}
+	}	
 }
 
 void ir_task (void *data)
@@ -117,7 +181,7 @@ void ir_task (void *data)
 	
 	if (ir_read_message (&msg) == IR_SUCCESS)
 	{
-		pio_output_toggle (LED1_PIO);
+		//pio_output_toggle (LED1_PIO);
 
 		switch(msg.command)
 		{
@@ -180,20 +244,15 @@ void drive_task (void *data)
 
 void init(void)
 {
-
+	/* led init */
+    pio_config_set (ALL_LEDS, PIO_OUTPUT_LOW);
+	
 	/* button init */
     button2 = button_init (&button2_cfg);
     pio_config_set (button2->pio, PIO_INPUT);
     button_poll_count_set (BUTTON_POLL_COUNT (BUTTON_POLL_RATE));
 
-	/* led init and startup_sequence */
-    pio_config_set (ALL_LEDS, PIO_OUTPUT_LOW);
-    delay_ms(1000);
-    pio_output_high (ALL_LEDS);
-    delay_ms(500);
-    pio_output_low (ALL_LEDS);
-
-//	adc_init (0);
+	adc_init (0);
 
 	/* wrlibs */
     usb_logging_init ();    
@@ -202,6 +261,13 @@ void init(void)
 	ir_init ();
 	sleep_init ();	
     kernel_init ();
+	
+	/* startup_sequence */
+    delay_ms(1000);
+    pio_output_high (ALL_LEDS);
+    delay_ms(500);
+    pio_output_low (ALL_LEDS);
+	
 }
 
 
@@ -216,7 +282,7 @@ main (void)
 	kernel_taskRegister (drive_task, DRIVE_TASK, 0, 100);  
 	kernel_taskRegister (ir_task, IR_TASK, 0, 1);
 //	kernel_taskRegister (usb_cdc_update, USB_TASK, 0, 20);
-//	kernel_taskRegister (adc_task, ADC_TASK, 0, 500);
+	kernel_taskRegister (monitor_task, MONITOR_TASK, 0, 200);
 
     
     kernel_start ();
