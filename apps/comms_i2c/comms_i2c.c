@@ -151,7 +151,7 @@ action_commands_task (void *data)
             // Transmit if photo ready over bluetooth
             bluetooth_send_command (btconn, rx[0]);
         }
-        else if (ch == CD_PHOTO_NEXT_LINE)
+        else if (ch == CD_PHOTO_LINE)
         {
             to_read = image_bytes_left < 128 ? image_bytes_left : 128;
             // Send interrupt to slaves
