@@ -42,6 +42,7 @@ def select_wait (r,w,e):
             recv_data, recv_addr = ready.recvfrom (BUFFER)
             print ("%d" %recv_data)
             #for i in recv_data:
+
                 #picture_out.write(str(hex(ord(i))))
                 #picture_out.write (",")
                 #recvd_bytes = recvd_bytes + 1
@@ -97,8 +98,8 @@ class App:
         self.button_connect = Button(text="Take Photo", command= lambda: self.send_command (CC_CAPTURE))
         self.button_connect.grid(row = 6,column = 2 )
         
-        self.button_connect = Button(text="CAM Sleep", command= lambda: self.send_command (CC_SLEEP_CAM))
-        self.button_connect.grid(row = 6,column = 3 )
+        self.button_connect = Button(text="Cam Fault", command= lambda: self.send_command (CD_FAULT))
+        self.button_connect.grid(row = 6,column = 2 )
         
         self.button_connect = Button(text="CAM Wake", command= lambda: self.send_command (CC_WAKE_CAM))
         self.button_connect.grid(row = 6,column = 4 )
