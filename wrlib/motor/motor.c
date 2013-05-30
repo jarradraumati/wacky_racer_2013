@@ -33,25 +33,17 @@ motor_t motor;
 void
 motor_init (void)
 {
-<<<<<<< Updated upstream
 	motor.pwm = pwm_init (&motor_pwm_cfg);
 	motor.speed = 0;
 	motor.direction = MOTOR_UNDEFINED;
 	motor.state = MOTOR_STATE_NORMAL;
 	motor_set_timeout (0);	
-=======
-    motor.pwm = pwm_init (&motor_pwm_cfg);
-    motor.speed = 0;
-    motor.state = MOTOR_STATE_NORMAL;
-    motor_set_timeout (0);	
->>>>>>> Stashed changes
     pwm_start (motor.pwm);
 }
 
 void 
 motor_set_speed(motor_speed_t speed)
 {	
-<<<<<<< Updated upstream
 	double duty = 0;
 
 	if (speed < -100)
@@ -82,38 +74,6 @@ motor_set_speed(motor_speed_t speed)
 	}
 	
 	motor_keepalive ();
-=======
-    double duty = 0;
-    
-    if (motor.speed != speed && speed <= MAX_FOR_SPEED)
-    {
-        if (speed < 0)
-        {    
-            if (speed < -100)
-                speed = -100;
-            duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_FWD*speed/100;
-        }
-        else if (speed > 0)
-        {
-            if (speed > 100)
-                speed = 100;
-            duty = PWM_MOTOR_DUTY_NEUTRAL + PWM_MOTOR_DUTY_RANGE_REV*speed/100;
-        }
-        else
-            duty = PWM_MOTOR_DUTY_NEUTRAL;
-
-        if(duty <= PWM_MOTOR_DUTY_MIN)
-                duty = PWM_MOTOR_DUTY_MIN;
-        if(duty >= PWM_MOTOR_DUTY_MAX)
-                duty = PWM_MOTOR_DUTY_MAX;
-        
-        pwm_duty_set(motor.pwm, PWM_DUTY_DIVISOR (PWM_MOTOR_FREQ_HZ, duty));	
-
-        motor.speed = speed;
-    }
-    
-    motor_keepalive ();
->>>>>>> Stashed changes
 }
 
 void 

@@ -12,6 +12,7 @@
 
 #include "usart.h"
 #include "pio.h"
+#include "delay.h"
 
 int
 bluetooth_write_ready_p (usart_t usart)
@@ -46,6 +47,7 @@ bluetooth_init (int baud_rate)
     /* Enable the bluetooth module by resetting */
     pio_config_set (BLUETOOTH_RESET_PIO, PIO_OUTPUT_HIGH);
     pio_output_high (BLUETOOTH_RESET_PIO);
+    delay_ms(5);
     pio_output_low (BLUETOOTH_RESET_PIO);
     
     /* Set up the USART to talk to the WT12 module on channel 1.*/
