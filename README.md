@@ -3,16 +3,23 @@
 ### Software for ENCE463 Wacky Racer project using the AT91SAM7S.
 
 ## Authors
-[Jarrad Raumati](https://github.com/jarradraumati/),
 Stephen Collinson,
 Wayne Laker,
-[Michael Hayes](https://github.com/mph-/).
+[Jarrad Raumati](https://github.com/jarradraumati/),
+Nick Wyatt.
+
 
 ## Description
 
 An embedded software application written in C for the AT91SAM7S microcontroller. The original project for ENCE463 consisted of 3 PCB's: Motor/Power, Camera and Communications.
 
+Also included in a gui-driven python application which facilitates communications to the device over bluetooth using the [Bluegiga WT12](http://www.bluegiga.com/WT12_Class_2_Bluetooth_Module) Bluetooth module.
 
+I2C is the communications protocol between the 3 boards.
+
+Note: Some of this code (particularly the I2C implementation) was written the the very early hours of the morning before the final inspection. Therefore comments and sanity may be lacking. This isn't even guaranteed to compile to be honest (the arm-none-eabi toolchain is a pain to get working seamlessly from my experiences).
+
+I've released this software due to the fact that it'll just rot away on my hard drive for the next decade, and that very little of the stuff we did was available on the internet at the time (except for Hayes's work). Maybe this might be of use to someone in the future.
 
 ## Using GIT and writing code
 
@@ -62,7 +69,7 @@ $ make program
 $ make debug
 ```
 
-Credit to [Michael Hayes](https://github.com/mph-/) from the Electrical and Computer Department at University of Canterbury for the submodules and make system.
+Credit to [Michael Hayes](https://github.com/mph-/) from the Electrical and Computer Department at University of Canterbury for the submodules, make system and support for us to get through this project.
 
 ### Driving GIT
 
