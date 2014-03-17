@@ -1,6 +1,6 @@
 # Wacky Racer 2013
 
-### Software for ENCE463 Wacky Racer project using the AT91SAM7S.
+### Software for ENCE461 Wacky Racer project using the AT91SAM7S.
 
 ## Authors
 Stephen Collinson,
@@ -11,7 +11,7 @@ Nick Wyatt.
 
 ## Description
 
-An embedded software application written in C for the AT91SAM7S microcontroller. The original project for ENCE463 consisted of 3 PCB's: Motor/Power, Camera and Communications.
+An embedded software application written in C for the AT91SAM7S microcontroller. The original project for ENCE461 consisted of 3 PCB's: Motor/Power, Camera and Communications.
 
 Also included in a gui-driven python application which facilitates communications to the device over bluetooth using the [Bluegiga WT12](http://www.bluegiga.com/WT12_Class_2_Bluetooth_Module) Bluetooth module.
 
