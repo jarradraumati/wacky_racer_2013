@@ -1,3 +1,6 @@
+<<<<<<< HEAD
+*.d
+=======
 # Object files
 *.o
 *.ko
@@ -11,9 +14,9 @@
 *.so
 *.so.*
 *.dylib
-*.d
 
 # Executables
 *.exe
 *.out
 *.app
+>>>>>>> d586d4d18b4b67856e9e7ef2c554af2ece8072bf
