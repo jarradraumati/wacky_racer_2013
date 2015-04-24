@@ -3,7 +3,7 @@
 ### Software for ENCE461 Wacky Racer project using the AT91SAM7S.
 
 ## Authors
-Stephen Collinson,
+[Stephen Collinson](https://github.com/sscNZ/),
 Wayne Laker,
 [Jarrad Raumati](https://github.com/jarradraumati/),
 Nick Wyatt.
